@@ -850,17 +850,16 @@ impl Task {
     /// args. Either the task opted in via `raw_args = true`, or the user
     /// passed `--help`/`-h` after `--` for an ad-hoc passthrough.
     ///
-    /// A second, inner `--` inside `trailing_args` acts as an escape hatch:
-    /// scanning stops there, so `mise run task -- -- --help` lets the user
-    /// pass a literal `--help` through the usage parser without triggering
-    /// the bypass.
+    /// Preserve the full explicit trailing arg list. For example,
+    /// `mise run task -- -- --help` should pass `-- --help` to the task,
+    /// not let the usage parser consume `--` and reduce the arg value to
+    /// just `--help`.
     pub fn should_bypass_usage_parser(&self) -> bool {
         if self.raw_args {
             return true;
         }
         self.trailing_args
             .iter()
-            .take_while(|a| a.as_str() != "--")
             .any(|a| a == "--help" || a == "-h")
     }
 
